@@ -33,6 +33,7 @@ namespace DeepLearning.Controllers
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
+            TestXOR();
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -45,7 +46,7 @@ namespace DeepLearning.Controllers
 
         public void TestXOR()
         {
-            //Load train data
+            
             NDarray x = np.array(new float[,] { { 0, 0 }, { 0, 1 }, { 1, 0 }, { 1, 1 } });
             NDarray y = np.array(new float[] { 0, 1, 1, 0 });
 
