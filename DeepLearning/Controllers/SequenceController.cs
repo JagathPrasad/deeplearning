@@ -9,15 +9,9 @@ namespace DeepLearning.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BreastCancerController : ControllerBase
+    public class SequenceController : ControllerBase
     {
 
 
-        public IActionResult GetCancerScore()
-        {
-            return Ok();
-        }
-
-       
     }
 }
