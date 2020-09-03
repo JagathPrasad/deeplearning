@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Keras;
 using Keras.Datasets;
@@ -40,7 +41,7 @@ namespace DeepLearning.Controllers
         {
             //string webRootPath = _webHostEnvironment.WebRootPath;
             //var x = Path.Combine(_webHostEnvironment.WebRootPath, "/data/breastcancer");
-            TestSkinCancer();
+            TestDrugDiscovery();
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -217,20 +218,63 @@ namespace DeepLearning.Controllers
             var train_gen = new Keras.PreProcessing.Image.ImageDataGenerator(rescale: 1 / 255, shear_range: 0.2f, zoom_range: 0.2f, horizontal_flip: true);
             var test_gen = new Keras.PreProcessing.Image.ImageDataGenerator(rescale: 1 / 255);
             string path = @"G:\Projects\deeplearning\DeepLearning\data\skincancer";
-            var train_set = train_gen.FlowFromDirectory(path + "\\train", target_size: (3, 3).ToTuple(), batch_size: 32, class_mode: "binary");
-            var test_set = test_gen.FlowFromDirectory(path + "\\test", target_size: (3, 3).ToTuple(), batch_size: 32, class_mode: "binary");
-            model.FitGenerator(train_set, steps_per_epoch: 1000, epochs: 25, validation_data: test_set, validation_steps: 400);
-            var xas = model;
+            var train_set = train_gen.FlowFromDirectory(path + "\\train", target_size: (3, 3).ToTuple(), batch_size: 20, class_mode: "binary");
+            var test_set = test_gen.FlowFromDirectory(path + "\\test", target_size: (3, 3).ToTuple(), batch_size: 20, class_mode: "binary");
+            model.FitGenerator(train_set, steps_per_epoch: 1000, epochs: 50, validation_data: test_set, validation_steps: 400);
+
+
+            //predict logic should come here.
         }
 
 
         public void TestDiabeticRetinopathy()
         {
 
+
         }
 
         public void TestDrugDiscovery()
         {
+            var sequence_length = 100;
+            var batch_size = 128;
+            var epochs = 30;
+            var text_path = @"G:\Projects\deeplearning\DeepLearning\data\drugdiscovery\smiles.txt";
+            var vocab_path = @"G:\Projects\deeplearning\DeepLearning\data\drugdiscovery\vocab.txt";
+            string text = System.IO.File.ReadAllText(text_path);
+            string vocab = System.IO.File.ReadAllText(vocab_path);
+            var charList = text.ToCharArray();
+            var uniqueChars = vocab.ToCharArray();
+
+            Dictionary<int, string> intToText = new Dictionary<int, string>();
+            Dictionary<string, int> textToInt = new Dictionary<string, int>();
+            int vocab_size = uniqueChars.Count();
+            Utility.Utility utility = new Utility.Utility();
+            textToInt = utility.ConvertTexttoInteger(charList);
+            intToText = utility.ConvertIntegertoText(charList);
+
+            List<Dictionary<string, int>> intList = new List<Dictionary<string, int>>();
+            List<Dictionary<string, int>> intListOut = new List<Dictionary<string, int>>();
+            for (int i = 0; i < (charList.Count() - sequence_length); i++)
+            {
+                char[] text_stringbuilder = new char[i + sequence_length];
+                for (int j = 0; j < i + sequence_length; j++)
+                {
+                    text_stringbuilder[j] = (charList[j]);
+                }
+                char[] text_out = new char[i + sequence_length];
+                text_out[i] = charList[i + sequence_length];
+                intList.Add(utility.ConvertTexttoInteger(text_stringbuilder));
+                intListOut.Add(utility.ConvertTexttoInteger(text_out));
+
+                if (i == 100) break;
+            }
+
+            //var X = np.reshape(intList, sequence_length, 1);
+            var model = new Sequential();
+            model.Add(new LSTM(256));
+            model.Add(new Dropout(0.2));
+            model.Add(new Dense(16, activation: "softmax"));
+            model.Compile(optimizer: "adam", loss: "categorical_crossentropy");
 
         }
 

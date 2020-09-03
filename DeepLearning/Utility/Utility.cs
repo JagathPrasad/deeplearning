@@ -32,5 +32,28 @@ namespace DeepLearning.Utility
         {
             return true;
         }
+
+        public Dictionary<string, int> ConvertTexttoInteger(char[] charList)
+        {
+            Dictionary<string, int> charToInteger = new Dictionary<string, int>();
+            for (int i = 0; i < charList.Length; i++)
+            {
+
+                if (!charToInteger.ContainsKey(charList[i].ToString()))
+                    charToInteger.Add(charList[i].ToString(), i);
+            }
+            return charToInteger;
+        }
+
+        public Dictionary<int, string> ConvertIntegertoText(char[] charList)
+        {
+            Dictionary<int, string> intToChar = new Dictionary<int, string>();
+            for (int i = 0; i < charList.Length; i++)
+            {
+                if (!intToChar.ContainsKey(charList[i]))
+                    intToChar.Add(i, charList[i].ToString());
+            }
+            return intToChar;
+        }
     }
 }
