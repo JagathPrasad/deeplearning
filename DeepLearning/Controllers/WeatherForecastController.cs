@@ -41,7 +41,7 @@ namespace DeepLearning.Controllers
         {
             //string webRootPath = _webHostEnvironment.WebRootPath;
             //var x = Path.Combine(_webHostEnvironment.WebRootPath, "/data/breastcancer");
-            TestDrugDiscovery();
+            TestSkinCancer();
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -220,7 +220,7 @@ namespace DeepLearning.Controllers
             string path = @"G:\Projects\deeplearning\DeepLearning\data\skincancer";
             var train_set = train_gen.FlowFromDirectory(path + "\\train", target_size: (3, 3).ToTuple(), batch_size: 20, class_mode: "binary");
             var test_set = test_gen.FlowFromDirectory(path + "\\test", target_size: (3, 3).ToTuple(), batch_size: 20, class_mode: "binary");
-            model.FitGenerator(train_set, steps_per_epoch: 1000, epochs: 50, validation_data: test_set, validation_steps: 400);
+            model.FitGenerator(train_set, steps_per_epoch: 400, epochs: 50, validation_data: test_set, validation_steps: 400);
 
 
             //predict logic should come here.
@@ -235,7 +235,7 @@ namespace DeepLearning.Controllers
 
         public void TestDrugDiscovery()
         {
-            var sequence_length = 100;
+            var sequence_length = 50;
             var batch_size = 128;
             var epochs = 30;
             var text_path = @"G:\Projects\deeplearning\DeepLearning\data\drugdiscovery\smiles.txt";
@@ -249,32 +249,43 @@ namespace DeepLearning.Controllers
             Dictionary<string, int> textToInt = new Dictionary<string, int>();
             int vocab_size = uniqueChars.Count();
             Utility.Utility utility = new Utility.Utility();
-            textToInt = utility.ConvertTexttoInteger(charList);
-            intToText = utility.ConvertIntegertoText(charList);
+            textToInt = utility.ConvertTexttoInteger(uniqueChars);
+            intToText = utility.ConvertIntegertoText(uniqueChars);
 
             List<Dictionary<string, int>> intList = new List<Dictionary<string, int>>();
+            //NDarray[] x = new NDarray[(charList.Count() - sequence_length)];
+            //NDarray[] y = new NDarray[(charList.Count() - sequence_length)];
+            NDarray[] x = new NDarray[100];
+            NDarray[] y = new NDarray[100];
             List<Dictionary<string, int>> intListOut = new List<Dictionary<string, int>>();
-            for (int i = 0; i < (charList.Count() - sequence_length); i++)
+            //for (int i = 0; i < (charList.Count() - sequence_length); i++)
+            for (int i = 0; i < 100; i++)
             {
                 char[] text_stringbuilder = new char[i + sequence_length];
-                for (int j = 0; j < i + sequence_length; j++)
+                for (int j = i; j < i + sequence_length; j++)
                 {
                     text_stringbuilder[j] = (charList[j]);
                 }
                 char[] text_out = new char[i + sequence_length];
                 text_out[i] = charList[i + sequence_length];
-                intList.Add(utility.ConvertTexttoInteger(text_stringbuilder));
-                intListOut.Add(utility.ConvertTexttoInteger(text_out));
+                x[i] = utility.ConvertTexttoIntegerDynamic(text_stringbuilder, textToInt);
+                y[i] = utility.ConvertTexttoIntegerDynamic(text_out, textToInt);
+
+                //intList.Add(utility.ConvertTexttoInteger(text_stringbuilder));
+                //intListOut.Add(utility.ConvertTexttoInteger(text_out));
 
                 if (i == 100) break;
             }
 
-            //var X = np.reshape(intList, sequence_length, 1);
+            var X = np.reshape(x, sequence_length + 1);
+            X = X / uniqueChars.Count();
+
             var model = new Sequential();
             model.Add(new LSTM(256));
             model.Add(new Dropout(0.2));
             model.Add(new Dense(16, activation: "softmax"));
             model.Compile(optimizer: "adam", loss: "categorical_crossentropy");
+            model.Fit(x, y, batch_size: 128, epochs: 50);
 
         }
 
