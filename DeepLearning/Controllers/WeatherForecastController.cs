@@ -41,7 +41,7 @@ namespace DeepLearning.Controllers
         {
             //string webRootPath = _webHostEnvironment.WebRootPath;
             //var x = Path.Combine(_webHostEnvironment.WebRootPath, "/data/breastcancer");
-            TestSkinCancer();
+            TestBreastCancer();
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -145,9 +145,18 @@ namespace DeepLearning.Controllers
 
         public void TestBreastCancer()
         {
-            var batch_size = 120;
-            var epoch = 25;
-            var num_classes = 5;
+            //int batch_size = 128;
+            //int num_classes = 10;
+            //int epochs = 12;
+
+            //// input image dimensions
+            //int img_rows = 28, img_cols = 28;
+
+            //Shape input_shape = null;
+
+            var batch_size = 128;
+            var epoch = 12;
+            var num_classes = 10;
             var image_size = 28;
             var load_date = "breast cancer images";
             /*
@@ -198,9 +207,9 @@ namespace DeepLearning.Controllers
             stringarray[0] = "accuracy";
             model.Compile(loss: "binary_crossentropy", optimizer: opt, metrics: stringarray);
 
-            //var H = modal.Fit(x: train_gen, steps_per_epoch: 1000, // BS,
-            //                  validation_data: validation_gen, validation_steps: 1000, // BS,
-            //               epochs: 100);
+            var H = model.FitGenerator(train_gen, steps_per_epoch: 2000, // BS,
+                              validation_data: validation_gen, validation_steps: 800, // BS,
+                           epochs: 50);
         }
 
 
@@ -253,13 +262,13 @@ namespace DeepLearning.Controllers
             intToText = utility.ConvertIntegertoText(uniqueChars);
 
             List<Dictionary<string, int>> intList = new List<Dictionary<string, int>>();
-            //NDarray[] x = new NDarray[(charList.Count() - sequence_length)];
-            //NDarray[] y = new NDarray[(charList.Count() - sequence_length)];
-            NDarray[] x = new NDarray[100];
-            NDarray[] y = new NDarray[100];
+            NDarray[] x = new NDarray[(charList.Count() - sequence_length)];
+            NDarray[] y = new NDarray[(charList.Count() - sequence_length)];
+            //NDarray[] x = new NDarray[100];
+            //NDarray[] y = new NDarray[100];
             List<Dictionary<string, int>> intListOut = new List<Dictionary<string, int>>();
-            //for (int i = 0; i < (charList.Count() - sequence_length); i++)
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < (charList.Count() - sequence_length); i++)
+            //for (int i = 0; i < 100; i++)
             {
                 char[] text_stringbuilder = new char[i + sequence_length];
                 for (int j = i; j < i + sequence_length; j++)
@@ -277,15 +286,15 @@ namespace DeepLearning.Controllers
                 if (i == 100) break;
             }
 
-            var X = np.reshape(x, sequence_length + 1);
-            X = X / uniqueChars.Count();
+            //var X = np.reshape(x[0], 5, 5, 1);
+            //X = X / uniqueChars.Count();
 
             var model = new Sequential();
             model.Add(new LSTM(256));
             model.Add(new Dropout(0.2));
             model.Add(new Dense(16, activation: "softmax"));
             model.Compile(optimizer: "adam", loss: "categorical_crossentropy");
-            model.Fit(x, y, batch_size: 128, epochs: 50);
+            model.Fit(x[0], y[0], batch_size: 128, epochs: 50);
 
         }
 
