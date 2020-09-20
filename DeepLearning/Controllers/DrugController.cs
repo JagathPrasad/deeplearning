@@ -10,6 +10,7 @@ namespace DeepLearning.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class DrugController : ControllerBase
+	
     {
     }
 }
